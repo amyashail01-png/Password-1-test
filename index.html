@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Check a password, see how attackers would crack it, explore entropy, build a passphrase and take a quiz. Nothing is sent or saved.">
+<title>Password Lab: what actually makes a password secure?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="nav" aria-label="Main">
+<div class="nav-in">
+<a class="brand" href="#top">Password Lab</a>
+<div class="links">
+<a href="#analyzer">Strength analyzer</a><a href="#weaknesses">Vulnerability inspector</a><a href="#passphrase-lab">Passphrase lab</a><a href="#entropy-sandbox">Entropy math</a><a href="#weakness-quiz">Security quiz</a>
+</div>
+<span class="badge">Zero-storage guarantee</span>
+</div>
+</nav>
+
+<div class="wrap" id="top">
+<div class="hero">
+<h1>What actually makes a password secure?</h1>
+<p>Old rules make you memorize fragile nonsense like <code>Tr0ub4dor&amp;3</code> that crackers break in minutes. See how length, entropy and memorable passphrases give real protection.</p>
+<p class="small" style="margin-top:18px">Try a benchmark example</p>
+<div class="scen" id="scen"></div>
+</div>
+
+<section class="blk" id="analyzer" aria-labelledby="h-an">
+<div class="card">
+<div class="head"><label for="pw" id="h-an" style="margin:0">Test any password or phrase</label><span class="meta" id="meta">Length: 0 · Pool: 0</span></div>
+<div class="field">
+<input id="pw" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type or paste here">
+<button id="toggle" type="button" aria-pressed="true">Hide</button>
+<button id="clear" type="button">Clear</button>
+</div>
+<div class="bar" aria-hidden="true"><i id="fill"></i></div>
+<div class="head" style="margin:0"><span class="meta" id="sline">Start typing</span><span class="meta">Local memory only. Never transmitted.</span></div>
+<div class="pools" id="pools" style="margin-top:8px"></div>
+</div>
+
+<div class="card" aria-live="polite">
+<div class="split">
+<div><div class="big"><span id="pct">0</span>% strength <span class="pill" id="lvl">Waiting</span></div>
+<p class="muted small" id="desc" style="margin:8px 0 0;max-width:420px"></p></div>
+<div class="nums"><div><b id="eff">0</b>effective bits</div><div><b id="raw">0</b>raw bits</div></div>
+</div>
+<div class="bar" aria-hidden="true"><i id="fill2"></i></div>
+<div class="scale"><span>0 trivial</span><span>40 weak</span><span>64 standard</span><span>80 strong</span><span>100+ very strong</span></div>
+<p class="math" id="math"></p>
+<p class="hl">Character structure</p>
+<div class="tiles" id="tiles"></div>
+<p class="hl">Estimated time to crack across four attackers</p>
+<div class="advgrid" id="attacks"></div>
+</div>
+</section>
+
+<section class="blk" id="weaknesses" aria-labelledby="h-vu">
+<div class="card">
+<div class="head"><h2 id="h-vu">Vulnerability deep dive <span class="pill bad" id="flawCount" hidden></span></h2></div>
+<p class="muted small" style="margin:0">Why traditional complexity rules fail against modern automated cracking.</p>
+<div id="flaws"></div>
+<div id="strengths"></div>
+</div>
+</section>
+
+<section class="blk" id="passphrase-lab" aria-labelledby="h-pl">
+<div class="card">
+<h2 id="h-pl">The great security paradox</h2>
+<p class="muted small" style="margin:4px 0 0">Complex-but-short versus long-and-memorable, at an attacker speed of 100 billion guesses a second.</p>
+<div class="vs">
+<div class="opt a"><b>A. Complex but short</b><div class="mono">Tr0ub4dor&amp;3</div><small>11 characters. Looks strong (about 72 bits by character count), but it is a dictionary word with predictable swaps, roughly 28 bits in practice.<br><b id="vsA"></b></small></div>
+<div class="opt b"><b>B. Long and memorable</b><div class="mono">sunset-glacier-falcon-velvet-anchor</div><small>5 random words from a 7,776-word list: 5 × 12.9 = 64.6 bits.<br><b id="vsB"></b></small></div>
+</div>
+<div class="take" id="take"></div>
+</div>
+
+<div class="card">
+<h2>Build a passphrase</h2>
+<p class="muted small" style="margin:4px 0 0">Let the computer pick the words. People choose predictably. This demo uses a small word list, so it needs more words than a real 7,776-word list.</p>
+<div class="gen-out" id="ppOut" aria-live="polite"></div>
+<div class="row"><label for="ppCount" style="margin:0">Words: <b id="ppCountVal">7</b></label><input id="ppCount" type="range" min="3" max="10" value="7"></div>
+<div class="row" style="margin-top:12px"><button class="primary" id="ppNew" type="button">New passphrase</button><button id="ppCopy" type="button">Copy</button><button id="ppCheck" type="button">Check it</button></div>
+<p class="toast" id="ppToast" role="status"></p>
+<p class="math" id="ppMath"></p>
+</div>
+
+<div class="card">
+<h2>Random password</h2>
+<div class="gen-out" id="genOut" aria-live="polite"></div>
+<div class="row"><label for="len" style="margin:0">Length: <b id="lenVal">18</b></label><input id="len" type="range" min="12" max="32" value="18"></div>
+<div class="row" style="margin-top:12px"><button class="primary" id="gen" type="button">New password</button><button id="copy" type="button">Copy</button><button id="test" type="button">Check it</button></div>
+<p class="toast" id="toast" role="status"></p>
+<p class="muted small" style="margin:0">Store it in a password manager, not in a note or spreadsheet.</p>
+</div>
+</section>
+
+<section class="blk" id="entropy-sandbox" aria-labelledby="h-en">
+<div class="card">
+<h2 id="h-en">Entropy math sandbox</h2>
+<p class="muted small" style="margin:4px 0 0">Entropy measures unpredictability in bits. Every extra bit doubles the guesses needed. Change the settings and watch the numbers move.</p>
+<div class="row" style="margin-top:14px"><label for="sbLen" style="margin:0">Length (L): <b id="sbLenVal">14</b> characters</label><input id="sbLen" type="range" min="4" max="32" value="14"></div>
+<p class="hl" style="margin-top:14px">Character set (pool R)</p>
+<div class="presets" id="presets">
+<button type="button" data-r="10">Numbers only (10)<small>0-9</small></button>
+<button type="button" data-r="26">Lowercase (26)<small>a-z</small></button>
+<button type="button" data-r="62" aria-pressed="true">Alphanumeric (62)<small>a-z, A-Z, 0-9</small></button>
+<button type="button" data-r="95">Full special (95)<small>letters, digits, symbols</small></button>
+</div>
+<p class="math" id="sbFormula"></p>
+<div class="big" style="margin-top:14px"><span id="sbBits">0</span> <span class="muted" style="font:500 1rem Figtree,sans-serif">bits of entropy</span></div>
+<p class="muted small" id="sbFacts" style="margin:6px 0 0"></p>
+<div class="advgrid" id="sbAttacks"></div>
+<p class="muted small" style="margin:12px 0 0">Try it: compare length 8 with 95 characters against length 16 with 26 characters. Length usually wins.</p>
+</div>
+</section>
+
+<section class="blk" id="weakness-quiz" aria-labelledby="h-qz">
+<div class="card" id="quiz"></div>
+<div class="card">
+<h2 id="h-faq" style="margin-bottom:6px">Myths and best practices</h2>
+<details open><summary>Why does "Password123!" fail even though it meets complexity rules?</summary><p>Those rules (one uppercase, one lowercase, one digit, one symbol) were designed before fast graphics-card cracking. People satisfy them the simplest way: capitalize a word and add 123 and ! at the end. Cracking tools try exactly those patterns in milliseconds.</p></details>
+<details><summary>What is Shannon entropy, and why is it better than a checklist?</summary><p>Entropy counts how many equally likely possibilities an attacker must consider, in bits: H = L × log2(R) for random choices. It rewards length and randomness directly, instead of ticking boxes that people satisfy in predictable ways.</p></details>
+<details><summary>Why did NIST stop recommending regular password changes?</summary><p>Forced changes lead people to make small, predictable edits (Summer1, then Summer2). NIST guidance (SP 800-63B) advises changing a password only when there is evidence of compromise, and favors length and blocklists of known-bad passwords over composition rules.</p></details>
+<details><summary>How do passkeys and two-step login fit in?</summary><p>A strong password protects you if a site is breached and guessed offline. Two-step login and passkeys add protection if a password is stolen or phished. Use both: a unique strong password in a manager, plus a second step for email, banking and anything important.</p></details>
+</div>
+</section>
+</div>
+<footer><span><b>Password Lab</b> · Interactive password strength and entropy explorer</span><span>Client-only. Nothing stored on a server.</span><span>Estimates are for learning, not a security audit.</span></footer>
+
+<script src="script.js"></script>
+</body>
+</html>
